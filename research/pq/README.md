@@ -31,6 +31,14 @@ provenance: agent
   - Gossip load per node = subnets joined × signatures per subnet × (signature + overhead) × copies.
   - Defaults: 1M validators, 8,000 nodes, 2 backbone subnets, 1.2 KiB signatures, 2 copies. The 1.2 KiB default is an older leanXMSS size; today's is 2,404 B. Our runs of the model counted 4–5 copies per message.
   - Calibrated on Sukun's DC simulation ([P2P call #10](https://forkcast.org/calls/p2p/010)): 500 nodes, 64 subnets, 2,500 votes per subnet, 2 subnets per node, no IDONTWANT. Home nodes peaked at ~40 Mbit/s on 25 Mbit/s links. That run carried **BLS-sized** votes (four bundled attestations: 960 B, or 552 B with EIP-8334).
+- **PQ Gasper spec** (Justin Traglia's [`pq` branch of ethereum/consensus-specs](https://github.com/ethereum/consensus-specs/tree/pq/specs/_features/pq), tip [`4c29678`](https://github.com/ethereum/consensus-specs/commit/4c296784bb6ff54cbdcf72ebdda2a1057cce8893) of 2026-11-21, read 2026-11-25):
+  - 16 committees on 16 subnets per slot, and 4 aggregators per committee, kept in the state and so public.
+  - An aggregate covers one committee and carries one proof. The proposer merges the proofs into the block's.
+  - Our reading is [`../pq-gasper/design.md`](../pq-gasper/design.md); the pointer with the files is in [`specs/`](../../specs/README.md#pq-gasper).
+- **PQ decoupled consensus spec** (Francesco D'Amato's `pq-dc` branch of [`ethlabs-org/consensus-specs`](https://github.com/ethlabs-org/consensus-specs/tree/pq-dc/specs/_features/pq), tip [`1e9307b`](https://github.com/ethlabs-org/consensus-specs/commit/1e9307bb73a92c7262bc7e571bed1a87570a7832) of 2026-11-25, read 2026-11-26; taken as the reference since that day, as [`specs/`](../../specs/README.md) explains):
+  - Rounds of 8 slots; 2,048 attestation committees per round, fixed by validator index, on 16 subnets. Upstream's `pq-dc` has the same counts, and splits the active validators evenly instead.
+  - A block takes up to 16 aggregates of FG attestations and 8 of head votes, under one merged proof. Aggregator selection and the aggregate messages are TODOs.
+  - The pointer with the files, and what it fixes for networking, is in [`specs/`](../../specs/README.md).
 - **[pqai27](https://ethlabs.org/writings/pqai27.html)** (Ethlabs): PQ decoupled consensus vs PQ Gasper is "the biggest open question"; Gasper is "plausibly the easier change".
 - **[Potuz](https://www.potuz.net/posts/pq/)**:
   - Gasper broadcasts ~30K attestations per slot, with 2 KB or 1.2 KB signatures.
@@ -82,7 +90,7 @@ What follows from it:
 - [`bls/`](../../bls/README.md) holds the BLS-era explainer, the SSZ byte accounting and the early FG notes.
 - Q17–Q19 keep their schedule logic. The parts that assume BLS are flagged at the top of each note.
 - [`requirements.md`](../../design/requirements.md) is next: votes & crypto, aggregation, PQ-forwardness.
-- [`properties.md`](../../properties.md) drops the I\*/J\* split.
+- [`properties/`](../../properties/README.md) (then `properties.md`) drops the I\*/J\* split.
 - [`../pq-gasper/`](../pq-gasper/README.md): the PQ Gasper alternative. Several of its [avenues and compromises](../../posts/pq-gasper-avenues.md) apply to PQ-DC too, at 4× the per-slot volume.
 - All [benchmarking](../../benchmarking/) runs so far carry BLS votes.
 
